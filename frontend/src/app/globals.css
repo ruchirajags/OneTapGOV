@@ -1,15 +1,46 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* OneTapGOV Color System */
+  --navy: #0F172A;
+  --blue: #2563EB;
+  --blue-hover: #3B82F6;
+  --blue-active: #1D4ED8;
+  --teal: #1488A6;
+  --teal-light: #2DD4BF;
+
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+  --border-mid: #CBD5E1;
+
+  --text-primary: #0F172A;
+  --text-muted: #64748B;
+  --text-light: #94A3B8;
+
+  --font: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --section-py: 96px;
+  --container: 1200px;
+
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +50,24 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding: var(--section-py) 0;
 }

@@ -15,5 +15,8 @@
     "checkJs": false,
     "strict": false
   },
-  "exclude": ["node_modules", ".next"]
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
 }
