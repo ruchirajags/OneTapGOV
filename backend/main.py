@@ -9,7 +9,7 @@ load_dotenv(dotenv_path=dotenv_path)
 if not os.getenv("SUPABASE_URL") and not os.getenv("NEXT_PUBLIC_SUPABASE_URL"):
     load_dotenv(dotenv_path=dotenv_path, encoding="utf-16")
 
-from api import chat
+from api import chat, schemes
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="OneTapGov API")
@@ -25,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(chat.router)
+app.include_router(schemes.router)
 
 @app.get("/")
 def root():
