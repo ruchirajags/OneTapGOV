@@ -37,7 +37,7 @@
   --font: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
 
   --section-py: 96px;
-  --container: min(1360px, calc(100vw - 48px));
+  --container: min(1680px, calc(100vw - 56px));
 
   --background: #ffffff;
   --foreground: #171717;
@@ -88,6 +88,31 @@ main {
   width: 100%;
 }
 
+.landing-page > section > div,
+.landing-page > footer > div,
+.landing-navbar__inner {
+  width: 100% !important;
+  max-width: var(--container) !important;
+}
+
+.landing-page > section > div,
+.landing-page > footer > div {
+  padding-left: clamp(20px, 2.4vw, 48px) !important;
+  padding-right: clamp(20px, 2.4vw, 48px) !important;
+}
+
+.landing-page > section:last-of-type > div {
+  max-width: min(900px, calc(100vw - 56px)) !important;
+}
+
+.landing-hero__grid {
+  grid-template-columns: minmax(0, 0.95fr) minmax(520px, 1.15fr) !important;
+}
+
+.landing-hero p {
+  max-width: 640px !important;
+}
+
 .landing-navbar__auth a:first-child {
   background: rgba(255, 255, 255, 0.12) !important;
   color: #fff !important;
@@ -100,7 +125,7 @@ main {
 
 @media (min-width: 1440px) {
   :root {
-    --container: min(1480px, calc(100vw - 80px));
+    --container: min(1840px, calc(100vw - 72px));
   }
 }
 
@@ -111,7 +136,7 @@ main {
 
   .landing-hero__grid {
     gap: 48px !important;
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: minmax(0, 1fr) minmax(440px, 1fr) !important;
   }
 
   #why-it-matters > div > div {
