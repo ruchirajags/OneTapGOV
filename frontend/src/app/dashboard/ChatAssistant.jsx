@@ -84,7 +84,20 @@ export default function ChatAssistant() {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setLoading(true);
-    setMissingField(null); // Clear buttons while loading
+
+    // If the assistant asked for a specific missing profile field, save answer per-question.
+    if (missingField && session && session.user?.id) {
+      try {
+        await supabase
+          .from('profiles')
+          .upsert({ id: session.user.id, [missingField]: messageToSend }, { returning: 'minimal' })
+      } catch (upsertErr) {
+        console.error('Failed to upsert profile field', missingField, upsertErr)
+      }
+    }
+
+    // Clear buttons while loading
+    setMissingField(null);
 
     try {
       const res = await fetch('/api/backend/chat', {
@@ -122,7 +135,7 @@ export default function ChatAssistant() {
     } finally {
       setLoading(false);
     }
-  }, [inputText, session, speak, userLanguage]);
+  }, [inputText, session, speak, userLanguage, missingField]);
 
   const handleVoiceInput = useCallback(() => {
     listen((transcript) => {

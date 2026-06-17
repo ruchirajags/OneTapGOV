@@ -1,14 +1,40 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function RecommendedSchemesButton() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
+
+  // Check profile completeness on mount
+  useEffect(() => {
+    const checkProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { data: profile } = await supabase.from('profiles').select('full_name,phone_number,sector,preferred_language').eq('id', session.user.id).single();
+        const required = ['full_name', 'phone_number', 'sector'];
+        const complete = profile && required.every(k => profile[k]);
+        setProfileComplete(!!complete);
+      } catch (e) {
+        console.warn('Failed to check profile completeness', e);
+      }
+    }
+    checkProfile();
+  }, []);
 
   const fetchRecommendedSchemes = async () => {
     setLoading(true);
     setResults(null);
+
+    if (!profileComplete) {
+      setResults({ status: 'incomplete', message: 'Please complete your profile before checking recommendations.' });
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
@@ -98,3 +124,4 @@ export default function RecommendedSchemesButton() {
     </div>
   );
 }
+
