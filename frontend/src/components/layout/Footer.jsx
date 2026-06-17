@@ -6,8 +6,6 @@ const FOOTER_COLS = [
     links: [
       { label: "How It Works", href: "#how-it-works" },
       { label: "Sectors", href: "#sectors" },
-      { label: "About Us", href: "#" },
-      { label: "Contact Us", href: "#" },
     ],
   },
   {
@@ -18,14 +16,6 @@ const FOOTER_COLS = [
       { label: "UIDAI", href: "https://uidai.gov.in" },
       { label: "DigiLocker", href: "https://digilocker.gov.in" },
       { label: "National Scholarship Portal", href: "https://scholarships.gov.in" },
-    ],
-  },
-  {
-    heading: "Legal",
-    links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Use", href: "#" },
-      { label: "Disclaimer", href: "#" },
     ],
   },
 ];
@@ -41,7 +31,7 @@ export default function Footer() {
         {/* Top row */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "1.4fr 1fr 1.4fr 0.8fr",
+          gridTemplateColumns: "1.4fr 1fr 1.4fr",
           gap: "48px",
           paddingBottom: "48px",
           borderBottom: "1px solid rgba(255,255,255,0.1)",
@@ -66,9 +56,16 @@ export default function Footer() {
               <ul style={{ listStyle: "none" }}>
                 {col.links.map((link) => (
                   <li key={link.label} style={{ marginBottom: "10px" }}>
-                    <a href={link.href} target={link.href.startsWith("http") ? "_blank" : undefined}
+                    <a
+                      href={link.href}
+                      target={link.href.startsWith("http") ? "_blank" : undefined}
                       rel="noreferrer"
-                      style={{ fontSize: "14px", color: "var(--border-mid)", textDecoration: "none", transition: "color 150ms" }}
+                      style={{
+                        fontSize: "14px",
+                        color: "var(--border-mid)",
+                        textDecoration: "none",
+                        transition: "color 150ms"
+                      }}
                       onMouseEnter={e => e.currentTarget.style.color = "#fff"}
                       onMouseLeave={e => e.currentTarget.style.color = "var(--border-mid)"}
                     >
@@ -91,7 +88,7 @@ export default function Footer() {
           gap: "16px",
         }}>
           <p style={{ fontSize: "13px", color: "var(--text-light)" }}>
-            © 2025 OneTapGOV. All rights reserved.
+            © 2026 OneTapGOV. All rights reserved.
           </p>
           <p style={{ fontSize: "13px", color: "var(--text-light)", maxWidth: "480px", textAlign: "right" }}>
             OneTapGOV provides guidance and eligibility recommendations. Applications are completed through official government portals.
