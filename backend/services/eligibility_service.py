@@ -42,14 +42,41 @@ class EligibilityService:
         return False
 
     @staticmethod
+    def _normalize_profile(profile: Dict[str, Any]) -> Dict[str, Any]:
+        """Maps database fields to requirement keys used in scheme data."""
+        normalized = profile.copy()
+        
+        # Map existing fields
+        normalized["annual_income"] = profile.get("income")
+        normalized["percentage"] = profile.get("academic_performance")
+        
+        # Derive categorical flags
+        sector = str(profile.get("sector", "")).lower()
+        gender = str(profile.get("gender", "")).lower()
+        
+        normalized["is_student"] = "true" if "education" in sector or "student" in sector else "false"
+        normalized["is_woman"] = "true" if gender == "female" else "false"
+        normalized["is_farmer"] = "true" if "farmer" in sector or "agriculture" in sector else "false"
+        
+        # NOTE: 'is_worker' requires a specific field in the database. 
+        # Assuming true if sector implies employment or worker status.
+        # Update this logic if a dedicated 'is_employed' field exists in DB.
+        normalized["is_worker"] = "true" if "worker" in sector or "employed" in sector else "false"
+        
+        return normalized
+
+    @staticmethod
     def check_eligibility(profile: Dict[str, Any], scheme: Dict[str, Any]) -> Dict[str, Any]:
         eligible = True
         failed_conditions = []
         passed_conditions = []
 
+        # Use normalized profile
+        norm_profile = EligibilityService._normalize_profile(profile)
+
         for condition in scheme.get("conditions", []):
             field = condition.get("field_name")
-            profile_value = profile.get(field)
+            profile_value = norm_profile.get(field)
             
             if EligibilityService.evaluate_condition(profile_value, condition):
                 passed_conditions.append(condition.get("human_readable_condition"))
