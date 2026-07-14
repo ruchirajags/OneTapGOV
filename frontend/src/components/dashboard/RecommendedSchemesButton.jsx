@@ -1,45 +1,30 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function RecommendedSchemesButton() {
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [profileComplete, setProfileComplete] = useState(false);
+  const [docChecklist, setDocChecklist] = useState({});
 
-  // Check profile completeness on mount
-  useEffect(() => {
-    const checkProfile = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-
-        const { data: profile } = await supabase.from('profiles').select('full_name,phone_number,sector,preferred_language').eq('id', session.user.id).single();
-        const required = ['full_name', 'phone_number', 'sector'];
-        const complete = profile && required.every(k => profile[k]);
-        setProfileComplete(!!complete);
-      } catch (e) {
-        console.warn('Failed to check profile completeness', e);
-      }
-    }
-    checkProfile();
-  }, []);
+  const toggleDocument = (schemeCode, docName) => {
+    setDocChecklist(prev => ({
+        ...prev,
+        [schemeCode]: {
+            ...prev[schemeCode],
+            [docName]: !prev[schemeCode]?.[docName]
+        }
+    }));
+  };
 
   const fetchRecommendedSchemes = async () => {
     setLoading(true);
     setResults(null);
-
-    if (!profileComplete) {
-      setResults({ status: 'incomplete', message: 'Please complete your profile before checking recommendations.' });
-      setLoading(false);
-      return;
-    }
-
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      const res = await fetch('/api/backend/schemes/eligible', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/schemes/eligible`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -110,6 +95,37 @@ export default function RecommendedSchemesButton() {
                       </ul>
                     </div>
                   )}
+                  {scheme.documents && (
+                    <div className="mt-4 border-t pt-4">
+                      <p className="font-semibold text-sm mb-2">Document Checklist:</p>
+                      {scheme.documents.map(doc => (
+                        <div key={doc} className="flex items-center gap-2 mb-1">
+                          <input 
+                            type="checkbox" 
+                            checked={docChecklist[scheme.scheme_code]?.[doc] || false}
+                            onChange={() => toggleDocument(scheme.scheme_code, doc)}
+                          />
+                          <span className="text-sm">{doc}</span>
+                        </div>
+                      ))}
+                      
+                      {(() => {
+                          const required = scheme.documents;
+                          const held = required.filter(doc => docChecklist[scheme.scheme_code]?.[doc]);
+                          const percentage = Math.round((held.length / required.length) * 100);
+                          const missing = required.filter(doc => !docChecklist[scheme.scheme_code]?.[doc]);
+
+                          return (
+                              <div className="mt-3 p-2 bg-blue-50 rounded text-sm">
+                                  <p className="font-bold">Readiness Score: {percentage}%</p>
+                                  {missing.length > 0 && (
+                                      <p className="text-red-600">Pending: {missing.join(', ')}</p>
+                                  )}
+                              </div>
+                          );
+                      })()}
+                    </div>
+                  )}
                 </div>
               ))
             )
@@ -124,4 +140,3 @@ export default function RecommendedSchemesButton() {
     </div>
   );
 }
-

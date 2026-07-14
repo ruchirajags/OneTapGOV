@@ -62,31 +62,25 @@ export default function SignupPage() {
         return;
       }
 
-      // Ensure a profiles row exists so the dashboard can read full_name by id.
-      const user = data?.user ?? (data && data.user) ?? null
-      if (user && supabase && typeof supabase.from === 'function') {
-        try {
-          await supabase
-            .from('profiles')
-            .upsert(
-              {
-                id: user.id,
-                full_name: form.full_name,
-                phone_number: form.phone_number,
-                preferred_language: form.preferred_language,
-              },
-              { returning: 'minimal' }
-            )
-        } catch (upsertErr) {
-          console.error('Failed to create or update profile row:', upsertErr)
-          // proceed anyway; user account exists even if profile insert fails
-        }
+      // Explicitly insert into profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          { 
+            id: data.user.id, 
+            full_name: form.full_name, 
+            email: form.email 
+          }
+        ]);
+
+      if (profileError) {
+        console.error("Profile creation failed", profileError);
       }
 
       // Redirect to dashboard on success
       router.push("/dashboard");
     } catch (err) {
-      setError(err?.message || "Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
