@@ -37,7 +37,11 @@ export default function ChatPage() {
       const data = await res.json();
       if (data.question) {
         setMessages([{ role: 'assistant', content: data.question }]);
-        speak(data.question, userLanguage);
+        const lang = data.preferred_language || userLanguage;
+        if (data.preferred_language) {
+          setUserLanguage(data.preferred_language);
+        }
+        speak(data.question, lang);
       }
     } catch (error) {
       console.error("Failed to fetch initial question", error);
@@ -88,11 +92,12 @@ export default function ChatPage() {
       if (data.question) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.question }]);
         
-        if (data.profile?.preferred_language) {
-            setUserLanguage(data.profile.preferred_language);
+        const lang = data.preferred_language || userLanguage;
+        if (data.preferred_language) {
+            setUserLanguage(data.preferred_language);
         }
 
-        speak(data.question, data.profile?.preferred_language || userLanguage);
+        speak(data.question, lang);
       }
     } catch (error) {
       console.error("Error sending message", error);

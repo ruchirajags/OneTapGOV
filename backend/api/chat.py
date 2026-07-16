@@ -141,5 +141,6 @@ async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
         "status": "asking",
         "phase": phase,
         "question": question,
-        "missing_field": missing_field
+        "missing_field": missing_field,
+        "preferred_language": language
     }

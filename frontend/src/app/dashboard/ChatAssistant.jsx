@@ -37,7 +37,11 @@ export default function ChatAssistant() {
       if (data.question) {
         setMessages([{ role: 'assistant', content: data.question }]);
         setMissingField(data.missing_field);
-        speak(data.question, userLanguage);
+        const lang = data.preferred_language || userLanguage;
+        if (data.preferred_language) {
+            setUserLanguage(data.preferred_language);
+        }
+        speak(data.question, lang);
       }
     } catch (error) {
       console.error("Failed to fetch initial question", error);
@@ -109,10 +113,9 @@ export default function ChatAssistant() {
         setMessages(prev => [...prev, { role: 'assistant', content: data.question }]);
         setMissingField(data.missing_field);
         
-        let currentLang = userLanguage;
-        if (data.profile?.preferred_language) {
-            setUserLanguage(data.profile.preferred_language);
-            currentLang = data.profile.preferred_language;
+        const currentLang = data.preferred_language || userLanguage;
+        if (data.preferred_language) {
+            setUserLanguage(data.preferred_language);
         }
 
         speak(data.question, currentLang);
