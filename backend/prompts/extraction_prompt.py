@@ -34,6 +34,9 @@ The user's message may contain information about one or more profile fields.
 Available Fields and Their Descriptions:
 {fields_and_descriptions}
 
+Current Field Being Asked:
+{current_field_context}
+
 User's Response: "{user_message}"
 
 TASK:
@@ -58,4 +61,14 @@ Guidelines:
 - Translate values to English where appropriate.
 - Only include fields you are highly confident about.
 - Pay attention to correction phrases like "actually", "instead", "not", "change", "correct", "update", "I meant".
+
+IMPORTANT — Handling Negative / Denial Responses:
+- If the user says "no", "not", "none", "don't have", "doesn't apply", "nah", "nope", or any other denial, EXTRACT the value as "No" for the field being asked about.
+- If the user says "yes", "yeah", "have", "do", "I do", "I have", or any affirmative response, EXTRACT the value as "Yes" for the field being asked about.
+- A negative answer IS valuable information — do NOT skip it or treat it as "no data extracted".
+- Example: User says "No, I don't have any disability" → extract {{"disability": "No"}}
+- Example: User says "Yes" when asked about minority status → extract {{"minority_status": "Yes"}}
+- Example: User says "No disability" → extract {{"disability": "No"}}
+- Example: User says "I don't own any land" → extract {{"agricultural_land": "No"}}
+- Example: User says "I have a bank account" → extract {{"bank_account": "Yes"}}
 """

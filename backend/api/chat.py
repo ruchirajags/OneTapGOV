@@ -101,13 +101,28 @@ async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
         if sector_res.data:
             profile.update(sector_res.data[0])
     
-    # 2. If user sent a message, extract data for ALL known fields
+    # 2. Identify the current missing field (what was being asked before this message)
+    current_missing = profile_service.find_first_missing(profile, BASIC_FIELDS)
+    if not current_missing:
+        sector = profile.get("sector")
+        sector_fields = profile_service.get_sector_fields(sector)
+        current_missing = profile_service.find_first_missing(profile, sector_fields)
+    
+    # 3. If user sent a message, extract data for ALL known fields
     if request.message:
         # Build all known field descriptions (basic + sector-specific)
         all_fields = get_all_known_fields(sector)
         
         # Extract values for any fields mentioned in the message
-        extracted_data = await groq_service.extract_multiple_fields(all_fields, request.message)
+        # Pass the current field being asked as context so the LLM can correctly map responses like "No"
+        # Only pass current_field if profile has data (avoids false extraction on the very first message)
+        has_prior_data = any(v for v in profile.values() if v)
+        extraction_field = current_missing if has_prior_data else None
+        extracted_data = await groq_service.extract_multiple_fields(
+            all_fields, 
+            request.message,
+            current_field=extraction_field
+        )
         
         if extracted_data:
             # Process 'sector' FIRST so subsequent field lookups use the correct sector table
@@ -134,7 +149,7 @@ async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
                 # Update this field in the database and local profile
                 profile = apply_field_update_to_db(user.id, field_name, field_value, profile)
     
-    # 3. Identify current phase and missing field
+    # 5. Re-identify current phase and missing field (after processing message)
     missing_field = profile_service.find_first_missing(profile, BASIC_FIELDS)
     phase = "basic"
     
@@ -145,7 +160,7 @@ async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
         missing_field = profile_service.find_first_missing(profile, sector_fields)
         phase = "sector_specific" if sector_fields else "completed"
 
-    # 4. Check if profile is now fully complete
+    # 6. Check if profile is now fully complete
     if not missing_field:
         return {
             "status": "fully_completed",
@@ -153,7 +168,7 @@ async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
             "profile": profile
         }
     
-    # 5. Generate next question
+    # 7. Generate next question
     language = profile.get("preferred_language", "English")
     field_desc = get_field_info(missing_field)
     
