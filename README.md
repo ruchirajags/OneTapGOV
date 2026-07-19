@@ -1,86 +1,126 @@
-# OneTapGOV
+OneTapGOV
 
-**Quickstart (Windows)**
+AI-Powered Government Scheme Discovery & Application Assistant
 
-- **Prerequisites**:
-  - Python 3.10+ installed and on PATH
-  - Node.js 16+ installed and on PATH
-  - `pnpm` (optional, recommended if you want to respect the lockfile). Install with `npm i -g pnpm` if needed.
+Built for the OpenAI × NamasteDev Hackathon
 
-**Backend**
+The Problem
 
-- **Files:** See [backend/requirements.txt](backend/requirements.txt#L1)
-- Recommended Python workflow (PowerShell):
+India runs thousands of government welfare schemes, yet millions of
+eligible citizens never benefit from them. Information is scattered
+across departments, eligibility rules are hard to interpret, application
+processes are complex, and language barriers put access further out of
+reach.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r backend/requirements.txt
-```
+Our Solution
 
-- If `pip install -r backend/requirements.txt` errors because the file encoding is Unicode/UTF-16 (null bytes shown), convert to UTF-8 first:
+OneTapGOV is an AI-powered conversational assistant that builds a
+citizen's profile through natural conversation, matches them against
+eligible government schemes, explains eligibility in plain language,
+lists the documents required, and hands off directly to the official
+government application portal.
 
-```powershell
-Get-Content -Path backend/requirements.txt -Encoding Unicode | Set-Content -Path backend/requirements.utf8.txt -Encoding utf8
-pip install -r backend/requirements.utf8.txt
-```
+Key Features
 
-- Environment variables: create `backend/.env` with at least the following keys used by the app:
-  - `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`
-  - `SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `SUPABASE_KEY`)
-  - `GEMINI_API_KEY`
+AI-powered conversational assistant
 
-- Run the backend (from `backend/`):
+Dynamic profile building through natural dialogue
 
-```powershell
-# if uvicorn is installed
-uvicorn main:app --reload --port 8000
+Intelligent eligibility matching engine
 
-# or
-python -m uvicorn main:app --reload --port 8000
-```
+Personalized scheme recommendations
 
-**Frontend**
+Required-document checklist for each scheme
 
-- **Files:** See [frontend/package.json](frontend/package.json#L1-L20)
-- Install and run (from `frontend/`):
+Direct links to official government portals
 
-```bash
-cd frontend
-pnpm install   # preferred if pnpm installed
-pnpm dev
+Secure authentication
 
-# or with npm
-npm install
-npm run dev
-```
+Clean, at-a-glance dashboard
 
-The frontend uses Next.js and `@supabase/supabase-js` to communicate with the backend/Supabase.
+Multilingual AI Assistant
 
-**Common commands**
+OneTapGOV is built to be accessible to users across India through
+multilingual conversation support. Users can interact with the AI
+assistant in multiple languages, and the assistant understands and
+responds naturally in the language selected.
 
-- Start backend: `uvicorn main:app --reload --port 8000` (run in `backend/`)
-- Start frontend: `pnpm dev` or `npm run dev` (run in `frontend/`)
+Voice interaction currently carries a browser limitation: Chrome's
+built-in Speech Recognition API provides reliable voice input primarily
+in English, so voice mode is fully supported in English today, while
+other languages remain fully supported through text. Multilingual
+conversations may also be subject to token availability, since API usage
+was constrained during the hackathon. In a production deployment, this
+can be resolved with scalable API infrastructure and higher token
+quotas, enabling uninterrupted multilingual support end to end.
 
-**Troubleshooting (Windows-specific)**
+Architecture
 
-- If `backend/requirements.txt` appears to contain null bytes or an unexpected encoding, convert it as shown above.
-- If a package fails to build (native wheels), install the Visual C++ build tools or use prebuilt wheels where possible.
-- If `pnpm install` fails, ensure Node version is >=16 and try `npm install` as a fallback.
+Citizen
 
-**Environment variables (summary)**
+↓
 
-- `SUPABASE_URL`, `SUPABASE_ANON_KEY` (or public variants), `SUPABASE_KEY`
-- `GEMINI_API_KEY` (Google GenAI key used by `GeminiService`)
+Next.js Frontend
 
-**Notes**
+↓
 
-- The backend uses FastAPI + Pydantic and connects to Supabase via `supabase` Python client.
-- The frontend is a Next.js app (React 19+).
+FastAPI Backend
 
----
-If you'd like, I can:
-- run the installs here in your workspace,
-- convert `backend/requirements.txt` to UTF-8 and install packages,
-- or create a small `dev` script to run backend+frontend concurrently.
+↓
+
+OpenAI
+
+↓
+
+Eligibility Engine
+
+↓
+
+Government Scheme Database
+
+↓
+
+Supabase
+
+Technology Stack
+
+How It Works
+
+1.  User signs in.
+
+2.  AI gathers profile details through conversation.
+
+3.  User data is securely stored.
+
+4.  Eligibility engine evaluates applicable schemes.
+
+5.  Personalized recommendations are generated.
+
+6.  Required documents and official application links are shown.
+
+Impact
+
+OneTapGOV empowers citizens to easily discover and access the government
+benefits they deserve --- reducing the information gap and improving
+welfare accessibility nationwide.
+
+Future Scope
+
+OCR-based document verification
+
+Aadhaar-assisted profile filling
+
+Multilingual voice assistant
+
+AI-powered form autofill
+
+WhatsApp integration
+
+Reminder notifications
+
+Team
+
+Built with ❤️ for the OpenAI × NamasteDev Hackathon.
+
+Mission: Every eligible citizen deserves to know the benefits they are
+entitled to.
