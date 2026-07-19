@@ -59,7 +59,7 @@ export const SECTORS = [
 // ─── How It Works Steps ────────────────────────────────────────────────────────
 export const HOW_IT_WORKS_STEPS = [
     {
-        number: "01",
+        number: "1",
         title: "Discover",
         description:
             "Tell us about yourself through a short set of guided questions. No forms, no confusion.",
@@ -71,7 +71,7 @@ export const HOW_IT_WORKS_STEPS = [
         ],
     },
     {
-        number: "02",
+        number: "2",
         title: "Understand Eligibility",
         description:
             "We compare your information against verified scheme criteria and surface what matches.",
@@ -83,14 +83,13 @@ export const HOW_IT_WORKS_STEPS = [
         ],
     },
     {
-        number: "03",
+        number: "3",
         title: "Get Application Ready",
         description:
             "Receive clear guidance on what documents to gather and where to apply officially.",
         capabilities: [
             "Required documents",
             "Readiness checklist",
-            "Application instructions",
             "Official portal links",
         ],
     },
@@ -161,8 +160,6 @@ export const TRUST_PILLARS = [
     {
         number: "02",
         title: "Transparent Matching",
-        description:
-            "Every recommendation includes an explanation of why it appears for your profile.",
     },
     {
         number: "03",

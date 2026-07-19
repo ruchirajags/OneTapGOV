@@ -1,5 +1,6 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
+import Image from "next/image";
 
 const NAV = [
     {
@@ -36,7 +37,7 @@ export default function DashboardSidebar({ profile }) {
         <aside
             style={{
                 width: 224,
-                background: '#0F172A',
+                background: '#0F150A',
                 display: 'flex',
                 flexDirection: 'column',
                 flexShrink: 0,
@@ -47,35 +48,36 @@ export default function DashboardSidebar({ profile }) {
                 zIndex: 50,
             }}
         >
-            {/* Logo */}
+        {/* Logo */}
+        <div
+            style={{
+                padding: '18px',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+            }}
+        >
+            <Image
+                src="/OneTapGOV-FinalLogo.png"
+                alt="OneTapGOV"
+                width={160}
+                height={46}
+                priority
+            />
+
             <div
                 style={{
-                    padding: '20px 18px 16px',
-                    borderBottom: '1px solid rgba(255,255,255,0.08)',
+                    fontSize: 10,
+                    color: 'rgba(255,255,255,0.3)',
+                    marginTop: 6,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    textAlign: 'center',
                 }}
             >
-                <div
-                    style={{
-                        fontSize: 16,
-                        fontWeight: 700,
-                        color: '#fff',
-                        letterSpacing: '-0.02em',
-                    }}
-                >
-                    OneTap<span style={{ color: '#2DD4BF' }}>GOV</span>
-                </div>
-                <div
-                    style={{
-                        fontSize: 10,
-                        color: 'rgba(255,255,255,0.3)',
-                        marginTop: 3,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                    }}
-                >
-                    Citizen Benefits Platform
-                </div>
             </div>
+        </div>
 
             {/* Nav */}
             <nav style={{ padding: '12px 10px', flex: 1, overflowY: 'auto' }}>

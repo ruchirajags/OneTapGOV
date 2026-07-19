@@ -27,12 +27,6 @@ function EligibilityPreviewPanel() {
     return () => clearInterval(interval);
   }, [paused]);
 
-  const handleManualSelect = (role) => {
-    setActiveRole(role);
-    setPaused(true);
-    setTimeout(() => setPaused(false), 5000);
-  };
-
   const matches = SCHEME_MATCHES[activeRole] || [];
   const documents = matches[0]?.documents || [];
 
@@ -73,7 +67,7 @@ function EligibilityPreviewPanel() {
       >
         {/* Panel header */}
         <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)" }}>
-          <p style={{ fontWeight: "600", color: "var(--navy)", marginBottom: "2px" }}>Who are you?</p>
+          <p style={{ fontWeight: "900", color: "var(--navy)", marginBottom: "2px" }}>Who are you?</p>
           <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>Tell us about yourself to get started</p>
         </div>
 
@@ -83,7 +77,6 @@ function EligibilityPreviewPanel() {
             {roles.map((role) => (
               <label
                 key={role}
-                onClick={() => handleManualSelect(role)}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -93,16 +86,19 @@ function EligibilityPreviewPanel() {
                   marginBottom: "4px",
                   background: activeRole === role ? "#EFF6FF" : "transparent",
                   border: activeRole === role ? "1px solid #BFDBFE" : "1px solid transparent",
-                  cursor: "pointer",
+                  cursor: "auto",
                   transition: "all 200ms ease",
                 }}
               >
                 <input
                   type="radio"
-                  name="hero-role"
                   checked={activeRole === role}
-                  onChange={() => handleManualSelect(role)}
-                  style={{ accentColor: "var(--blue)" }}
+                  readOnly
+                  tabIndex={-1}
+                  style={{
+                    accentColor: "var(--blue)",
+                    pointerEvents: "none",
+                  }}
                 />
                 <span style={{
                   fontWeight: activeRole === role ? "600" : "400",

@@ -72,23 +72,6 @@ export default function HowRecommendationsWork() {
             </div>
           ))}
         </div>
-
-        {/* Note */}
-        <FadeUp delay={600}>
-          <div style={{
-            marginTop: "56px",
-            padding: "20px 28px",
-            background: "#F0FDF4",
-            border: "1px solid #BBF7D0",
-            borderRadius: "10px",
-            textAlign: "center",
-          }}>
-            <p style={{ fontSize: "15px", color: "#166534", fontWeight: "500", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-              <ShieldIcon size={18} />
-              Every recommendation includes an explanation of why you qualify.
-            </p>
-          </div>
-        </FadeUp>
       </div>
     </section>
   );

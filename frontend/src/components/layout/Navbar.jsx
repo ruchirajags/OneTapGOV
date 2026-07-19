@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Button from "../ui/Button";
 
 const NAV_LINKS = [
@@ -25,9 +26,8 @@ export default function Navbar() {
       left: 0,
       right: 0,
       zIndex: 100,
-      background: scrolled
-        ? "linear-gradient(135deg, rgba(15,23,42,0.96) 0%, rgba(37,99,235,0.92) 58%, rgba(20,136,166,0.9) 100%)"
-        : "linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(37,99,235,0.84) 58%, rgba(20,136,166,0.78) 100%)",
+background: 
+   "linear-gradient(90deg, #FFFFFF 0%, #FFFFFF 12%, #2563EB 22%, #1488A6 80%)",
       borderBottom: "1px solid rgba(255,255,255,0.18)",
       boxShadow: scrolled ? "0 12px 32px rgba(15,23,42,0.14)" : "0 8px 28px rgba(15,23,42,0.1)",
       backdropFilter: "blur(12px)",
@@ -42,14 +42,22 @@ export default function Navbar() {
         alignItems: "center",
         justifyContent: "space-between",
       }}>
-        {/* Logo */}
-        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "2px", flexShrink: 0 }}>
-          <span style={{ fontSize: "18px", fontWeight: "700", color: "#fff", letterSpacing: "0" }}>
-            OneTap
-          </span>
-          <span style={{ fontSize: "18px", fontWeight: "700", color: "var(--teal-light)", letterSpacing: "0" }}>
-            GOV
-          </span>
+        <Link
+          href="/"
+          style={{
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Image
+            src="/OneTapGOV-FinalLogo.png"
+            alt="OneTapGOV"
+            width={150}
+            height={42}
+            priority
+          />
         </Link>
 
         {/* Nav links */}

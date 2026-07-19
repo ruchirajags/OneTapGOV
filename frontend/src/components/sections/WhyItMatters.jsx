@@ -12,9 +12,9 @@ const TIMELINE_POINTS = [
 ];
 
 const STATS = [
-  { value: 100, suffix: "+", label: "Government schemes indexed" },
+  { value: 50, suffix: "+", label: "Government schemes indexed" },
   { value: 3, suffix: "", label: "Citizen sectors currently supported" },
-  { value: 15, suffix: "+", label: "Verified schemes currently available" },
+  { value: 10, suffix: "+", label: "Verified schemes currently available" },
 ];
 
 function useCountUp(target, duration = 1500) {
