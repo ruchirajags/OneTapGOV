@@ -85,16 +85,25 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user');
 
-      const upsert = {
-        id: user.id,
-        full_name: form.full_name,
-        phone_number: form.phone_number,
-        sector: form.sector,
-        preferred_language: form.preferred_language,
-      };
+      // Save display info to profiles table
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          full_name: form.full_name,
+          phone_number: form.phone_number,
+        }, { returning: 'minimal' });
+      if (profileErr) throw profileErr;
 
-      const { error } = await supabase.from('profiles').upsert(upsert, { returning: 'minimal' });
-      if (error) throw error;
+      // Save sector & language to user_basic_info table
+      const { error: basicErr } = await supabase
+        .from('user_basic_info')
+        .upsert({
+          user_id: user.id,
+          sector: form.sector,
+          preferred_language: form.preferred_language,
+        }, { returning: 'minimal' });
+      if (basicErr) throw basicErr;
 
       setMsg('Profile saved successfully.');
     } catch (err) {

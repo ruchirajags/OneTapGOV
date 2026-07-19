@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from services.supabase_service import supabase
@@ -43,6 +43,44 @@ def get_field_info(field_name: str):
     }
     return all_descriptions.get(field_name, field_name)
 
+def get_all_known_fields(sector: Optional[str] = None):
+    """Returns a dict of all known field names -> descriptions.
+    Includes basic fields and, if sector is known, sector-specific fields."""
+    fields = dict(FIELD_DESCRIPTIONS)
+    
+    if sector:
+        sector_lower = sector.lower()
+        if "farmer" in sector_lower:
+            fields.update(FARMER_FIELD_DESCRIPTIONS)
+        elif "student" in sector_lower:
+            fields.update(STUDENT_FIELD_DESCRIPTIONS)
+        elif "women" in sector_lower:
+            fields.update(WOMEN_FIELD_DESCRIPTIONS)
+    
+    return fields
+
+
+def apply_field_update_to_db(user_id: str, field_name: str, field_value, profile: dict):
+    """Update a single field in the appropriate database table.
+    Returns the updated profile dict."""
+    target_table = profile_service.get_table_name(field_name, sector=profile.get("sector"))
+    
+    update_data = {field_name: field_value}
+    
+    if target_table != "user_basic_info":
+        # For sector tables, ensure a record exists before updating
+        check_res = supabase.table(target_table).select("user_id").eq("user_id", user_id).execute()
+        if not check_res.data:
+            supabase.table(target_table).insert({"user_id": user_id, field_name: field_value}).execute()
+        else:
+            supabase.table(target_table).update(update_data).eq("user_id", user_id).execute()
+    else:
+        supabase.table(target_table).update(update_data).eq("user_id", user_id).execute()
+    
+    # Update local profile
+    profile[field_name] = field_value
+    return profile
+
 @router.post("")
 async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
     # 1. Fetch current profile
@@ -63,7 +101,55 @@ async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
         if sector_res.data:
             profile.update(sector_res.data[0])
     
-    # 2. Identify current phase and missing field
+    # 2. Identify the current missing field (what was being asked before this message)
+    current_missing = profile_service.find_first_missing(profile, BASIC_FIELDS)
+    if not current_missing:
+        sector = profile.get("sector")
+        sector_fields = profile_service.get_sector_fields(sector)
+        current_missing = profile_service.find_first_missing(profile, sector_fields)
+    
+    # 3. If user sent a message, extract data for ALL known fields
+    if request.message:
+        # Build all known field descriptions (basic + sector-specific)
+        all_fields = get_all_known_fields(sector)
+        
+        # Extract values for any fields mentioned in the message
+        # Pass the current field being asked as context so the LLM can correctly map responses like "No"
+        # Only pass current_field if profile has data (avoids false extraction on the very first message)
+        has_prior_data = any(v for v in profile.values() if v)
+        extraction_field = current_missing if has_prior_data else None
+        extracted_data = await groq_service.extract_multiple_fields(
+            all_fields, 
+            request.message,
+            current_field=extraction_field
+        )
+        
+        if extracted_data:
+            # Process 'sector' FIRST so subsequent field lookups use the correct sector table
+            sector_value = extracted_data.pop("sector", None)
+            if sector_value is not None and (not isinstance(sector_value, str) or sector_value.strip()):
+                profile = apply_field_update_to_db(user.id, "sector", sector_value, profile)
+                sector = sector_value
+                # Refetch sector-specific profile if sector changed
+                new_sector_table = profile_service.get_sector_table(sector)
+                if new_sector_table:
+                    sector_res = supabase.table(new_sector_table).select("*").eq("user_id", user.id).execute()
+                    if sector_res.data:
+                        profile.update(sector_res.data[0])
+            
+            # Process remaining extracted fields
+            for field_name, field_value in extracted_data.items():
+                if field_value is None or (isinstance(field_value, str) and field_value.strip() == ""):
+                    continue
+                # Skip if value hasn't changed to avoid unnecessary DB writes
+                existing = profile.get(field_name)
+                if existing is not None and str(existing) == str(field_value):
+                    continue
+                
+                # Update this field in the database and local profile
+                profile = apply_field_update_to_db(user.id, field_name, field_value, profile)
+    
+    # 5. Re-identify current phase and missing field (after processing message)
     missing_field = profile_service.find_first_missing(profile, BASIC_FIELDS)
     phase = "basic"
     
@@ -74,51 +160,7 @@ async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
         missing_field = profile_service.find_first_missing(profile, sector_fields)
         phase = "sector_specific" if sector_fields else "completed"
 
-    # 3. Handle user response if provided
-    if request.message and missing_field:
-        field_desc = get_field_info(missing_field)
-        extracted_data = await groq_service.extract_data(missing_field, field_desc, request.message)
-        
-        if extracted_data.get(missing_field):
-            # Update profile in Supabase
-            target_table = profile_service.get_table_name(missing_field, sector=profile.get("sector"))
-            
-            # For sector tables, ensure record exists
-            if target_table != "user_basic_info":
-                check_res = supabase.table(target_table).select("user_id").eq("user_id", user.id).execute()
-                if not check_res.data:
-                    # Initialize record with user_id and the extracted data
-                    insert_data = {"user_id": user.id}
-                    insert_data.update(extracted_data)
-                    supabase.table(target_table).insert(insert_data).execute()
-                else:
-                    supabase.table(target_table).update(extracted_data).eq("user_id", user.id).execute()
-            else:
-                supabase.table(target_table).update(extracted_data).eq("user_id", user.id).execute()
-            
-            # Refresh profile and find NEXT missing field
-            profile.update(extracted_data)
-            
-            # If sector was just updated, we might need to fetch its table too
-            if missing_field == "sector":
-                new_sector = extracted_data.get("sector")
-                new_sector_table = profile_service.get_sector_table(new_sector)
-                if new_sector_table:
-                    sector_res = supabase.table(new_sector_table).select("*").eq("user_id", user.id).execute()
-                    if sector_res.data:
-                        profile.update(sector_res.data[0])
-
-            # Re-evaluate missing field and phase after update
-            missing_field = profile_service.find_first_missing(profile, BASIC_FIELDS)
-            phase = "basic"
-            
-            if not missing_field:
-                sector = profile.get("sector")
-                sector_fields = profile_service.get_sector_fields(sector)
-                missing_field = profile_service.find_first_missing(profile, sector_fields)
-                phase = "sector_specific" if sector_fields else "completed"
-
-    # 4. Check if profile is now fully complete
+    # 6. Check if profile is now fully complete
     if not missing_field:
         return {
             "status": "fully_completed",
@@ -126,7 +168,7 @@ async def chat_endpoint(request: ChatRequest, user = Depends(get_current_user)):
             "profile": profile
         }
     
-    # 5. Generate next question
+    # 7. Generate next question
     language = profile.get("preferred_language", "English")
     field_desc = get_field_info(missing_field)
     

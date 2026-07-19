@@ -4,15 +4,15 @@ import { supabase } from "../../lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 const LANGUAGES = [
-  { value: "en", label: "English" },
-  { value: "hi", label: "हिन्दी (Hindi)" },
-  { value: "mr", label: "मराठी (Marathi)" },
-  { value: "ta", label: "தமிழ் (Tamil)" },
-  { value: "te", label: "తెలుగు (Telugu)" },
-  { value: "bn", label: "বাংলা (Bengali)" },
-  { value: "gu", label: "ગુજરાતી (Gujarati)" },
-  { value: "kn", label: "ಕನ್ನಡ (Kannada)" },
-  { value: "pa", label: "ਪੰਜਾਬੀ (Punjabi)" },
+  { value: "English", label: "English" },
+  { value: "Hindi", label: "हिन्दी (Hindi)" },
+  { value: "Marathi", label: "मराठी (Marathi)" },
+  { value: "Tamil", label: "தமிழ் (Tamil)" },
+  { value: "Telugu", label: "తెలుగు (Telugu)" },
+  { value: "Bengali", label: "বাংলা (Bengali)" },
+  { value: "Gujarati", label: "ગુજરાતી (Gujarati)" },
+  { value: "Kannada", label: "ಕನ್ನಡ (Kannada)" },
+  { value: "Punjabi", label: "ਪੰਜਾਬੀ (Punjabi)" },
 ];
 
 export default function SignupPage() {
@@ -22,7 +22,7 @@ export default function SignupPage() {
     email: "",
     phone_number: "",
     password: "",
-    preferred_language: "en",
+    preferred_language: "English",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -62,7 +62,7 @@ export default function SignupPage() {
         return;
       }
 
-      // Explicitly insert into profiles table
+      // Insert into profiles table (stores display name & email)
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([
@@ -75,6 +75,20 @@ export default function SignupPage() {
 
       if (profileError) {
         console.error("Profile creation failed", profileError);
+      }
+
+      // Also create user_basic_info record so dashboard can load without crashing
+      const { error: basicInfoError } = await supabase
+        .from('user_basic_info')
+        .insert([
+          {
+            user_id: data.user.id,
+            preferred_language: form.preferred_language,
+          }
+        ]);
+
+      if (basicInfoError) {
+        console.error("user_basic_info creation failed", basicInfoError);
       }
 
       // Redirect to dashboard on success
