@@ -20,21 +20,28 @@ export default function ProfilePage() {
           return;
         }
 
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('full_name,phone_number,sector,preferred_language')
-          .eq('id', user.id)
-          .single();
+        // Load from both tables — profiles has full_name, user_basic_info has sector/language
+        const [profileRes, basicRes] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('full_name,phone_number')
+            .eq('id', user.id)
+            .maybeSingle(),
+          supabase
+            .from('user_basic_info')
+            .select('sector,preferred_language')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+        ]);
 
-        if (error) {
-          console.warn('Profile read error:', error.message);
-        }
+        const profile = profileRes.data || {};
+        const basic = basicRes.data || {};
 
         setForm({
-          full_name: profile?.full_name || user.user_metadata?.full_name || '',
-          phone_number: profile?.phone_number || user.user_metadata?.phone_number || '',
-          sector: profile?.sector || '',
-          preferred_language: profile?.preferred_language || user.user_metadata?.preferred_language || 'en',
+          full_name: profile.full_name || user.user_metadata?.full_name || '',
+          phone_number: profile.phone_number || user.user_metadata?.phone_number || '',
+          sector: basic.sector || '',
+          preferred_language: basic.preferred_language || user.user_metadata?.preferred_language || 'en',
         });
       } catch (e) {
         console.error('Failed to load profile', e);
@@ -55,16 +62,25 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user');
 
-      const upsert = {
-        id: user.id,
-        full_name: form.full_name,
-        phone_number: form.phone_number,
-        sector: form.sector,
-        preferred_language: form.preferred_language,
-      };
+      // Save display info to profiles table
+      const { error: profileErr } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          full_name: form.full_name,
+          phone_number: form.phone_number,
+        }, { returning: 'minimal' });
+      if (profileErr) throw profileErr;
 
-      const { error } = await supabase.from('profiles').upsert(upsert, { returning: 'minimal' });
-      if (error) throw error;
+      // Save sector & language to user_basic_info table
+      const { error: basicErr } = await supabase
+        .from('user_basic_info')
+        .upsert({
+          user_id: user.id,
+          sector: form.sector,
+          preferred_language: form.preferred_language,
+        }, { returning: 'minimal' });
+      if (basicErr) throw basicErr;
 
       setMsg('Profile saved successfully.');
     } catch (err) {

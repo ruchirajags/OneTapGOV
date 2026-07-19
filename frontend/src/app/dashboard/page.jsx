@@ -17,8 +17,8 @@ export default function Dashboard() {
   const loadProfile = useCallback(async (userId) => {
     try {
       const [basicRes, profileRes] = await Promise.all([
-        supabase.from('user_basic_info').select('*').eq('user_id', userId).single(),
-        supabase.from('profiles').select('full_name, preferred_language').eq('id', userId).single(),
+        supabase.from('user_basic_info').select('*').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('full_name, preferred_language').eq('id', userId).maybeSingle(),
       ]);
 
       const merged = {
@@ -37,21 +37,21 @@ export default function Dashboard() {
           .from('farmer_profile')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
         if (r.data) Object.assign(merged, r.data);
       } else if (sector.includes('student') || sector.includes('education')) {
         const r = await supabase
           .from('student_profile')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
         if (r.data) Object.assign(merged, r.data);
       } else if (sector.includes('women') || sector.includes('woman')) {
         const r = await supabase
           .from('women_profile')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
         if (r.data) Object.assign(merged, r.data);
       }
 
